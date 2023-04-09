@@ -155,10 +155,14 @@ async function start(client: Client) {
         await client.sendFile(
           message.from,
           './src/redhat-event-driven-architecture.pdf',
-          // path.join('./redhat-event-driven-architecture.pdf'),
           'redhat-event-driven-architecture',
           `You just sent me this ${message.type}`
         );
+        message;
+        client.archiveChat(message.from, true);
+      }
+      if (message.body == 'activame') {
+        client.archiveChat(message.from, false);
       }
     } catch (error) {
       console.log('TCL: start -> error', error);
