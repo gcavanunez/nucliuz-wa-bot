@@ -8,8 +8,10 @@ import {
   ev,
   smartUserAgent,
   NotificationLanguage,
+  MessageTypes,
 } from '@open-wa/wa-automate';
 import path from 'path';
+import { DB_CONFIG } from './data';
 const mime = require('mime-types');
 const fs = require('fs');
 const uaOverride =
@@ -131,7 +133,11 @@ async function start(client: Client) {
   // client.onParticipantsChanged("XXXXXXXXXX-YYYYYYYYY@g.us",x=>console.log(x))
   client.onMessage(async (message) => {
     console.log('----from onMessage----');
-    console.log(message);
+    // if (message.type === MessageTypes.TEXT) {
+    //   console.log(message);
+    //   // message.chat.
+    //   console.log(message.chat.msgs);
+    // }
     try {
       // const mp3_message_id = await client.sendAudio(
       //   message.from,
@@ -139,31 +145,56 @@ async function start(client: Client) {
       //   undefined
       // );
       // console.log('start -> mp', mp3_message_id);
-      if (
-        message.body ==
-        'Me gustaría recibir información del estabilizador Osmo Mobile 6'
-      ) {
-        await client.sendText(
-          message.from,
-          'Sea un trigger del bot y que ejecute una secuencia de cosas'
-        );
+      const responses = DB_CONFIG[message.body];
+      console.log({ responses });
+      if (responses) {
+        for (let i = 0; i < responses.length; i++) {
+          const element = responses[i];
+          if (i === 0) {
+            await client.reply(message.from, element.payload, message.id);
+          } else {
+            if (element.type === 'text') {
+              await client.sendText(message.from, element.payload);
+            }
+            if (element.type === 'file') {
+              await client.sendFile(
+                message.from,
+                path.resolve(process.cwd(), 'attachments', element.payload),
+                element.payload,
+                `You just sent me this ${message.type}`
+              );
+            }
+            if (element.type === 'image') {
+              await client.sendImage(
+                message.from,
+                path.resolve(process.cwd(), 'attachments', element.payload),
+                element.payload,
+                `You just sent me this ${message.type}`
+              );
+            }
+          }
+        }
 
-        const isConnected = await client.isConnected();
-        console.log('TCL: start -> isConnected', isConnected);
-        console.log(message.body, message.id, message?.quotedMsgObj?.id);
+        // await client.sendText(
+        //   message.from,
+        //   'Sea un trigger del bot y que ejecute una secuencia de cosas'
+        // );
+
+        // await client.sendFile(
+        //   message.from,
+        //   './src/redhat-event-driven-architecture.pdf',
+        //   'redhat-event-driven-architecture',
+        //   `You just sent me this ${message.type}`
+        // );
+        // client.archiveChat(message.from, true);
+        // const isConnected = await client.isConnected();
+        // console.log('TCL: start -> isConnected', isConnected);
+        // console.log(message.body, message.id, message?.quotedMsgObj?.id);
         // you can send a file also with sendImage or await client.sendFile
-        await client.sendFile(
-          message.from,
-          './src/redhat-event-driven-architecture.pdf',
-          'redhat-event-driven-architecture',
-          `You just sent me this ${message.type}`
-        );
-        message;
-        client.archiveChat(message.from, true);
       }
-      if (message.body == 'activame') {
-        client.archiveChat(message.from, false);
-      }
+      // if (message.body == 'activame') {
+      //   client.archiveChat(message.from, false);
+      // }
     } catch (error) {
       console.log('TCL: start -> error', error);
     }
