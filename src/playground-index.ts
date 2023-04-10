@@ -18,7 +18,10 @@ app.listen(port, () => {
   console.log(`TypeScript with Express http://localhost:${port}/`);
   // console.log(path.join(__dirname, 'redhat-event-driven-architecture.pdf'));
   console.log(
-    path.resolve(process.cwd(), 'src', 'redhat-event-driven-architecture.pdf')
+    path.resolve(process.cwd(), 'src', 'redhat-event-driven-architecture.pdf'),
+    process.cwd(),
+    'attachments',
+    'redhat-event-driven-architecture.pdf'
   );
 });
 

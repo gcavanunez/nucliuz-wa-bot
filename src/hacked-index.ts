@@ -8,10 +8,13 @@ import {
   ev,
   smartUserAgent,
   NotificationLanguage,
-  Message,
+  MessageTypes,
 } from '@open-wa/wa-automate';
-import path from 'path';
 import { DB_CONFIG } from './data';
+import path from 'path';
+// import path from 'path';
+// import { DB_CONFIG } from './data';
+const mime = require('mime-types');
 const fs = require('fs');
 const uaOverride =
   'WhatsApp/2.16.352 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Safari/605.1.15';
@@ -59,51 +62,6 @@ ev.on('STARTUP.**', async (data, sessionId) => {
 ev.on('**', async (data, sessionId, namespace) => {
   console.log('\n----------');
   console.log('EV', data, sessionId, namespace);
-  if (globalClient) {
-    if (data?.event === 'onAnyMessage') {
-      try {
-        const message = data.data as Message;
-        const responses = DB_CONFIG[message.body];
-        console.log({ responses });
-        if (responses) {
-          for (let i = 0; i < responses.length; i++) {
-            const element = responses[i];
-            if (i === 0) {
-              await globalClient.reply(
-                message.from,
-                element.payload,
-                message.id
-              );
-            } else {
-              if (element.type === 'text') {
-                await globalClient.sendText(message.from, element.payload);
-              }
-              if (element.type === 'file') {
-                await globalClient.sendFile(
-                  message.from,
-                  `./attachments/${element.payload}`,
-                  element.payload,
-                  `You just sent me this ${message.type}`
-                );
-              }
-              if (element.type === 'image') {
-                await globalClient.sendImage(
-                  message.from,
-                  `./attachments/${element.payload}`,
-                  element.payload,
-                  `You just sent me this ${message.type}`
-                );
-              }
-            }
-          }
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    const isConnected = await globalClient.isConnected();
-    console.log('TCL: start -> isConnected', isConnected);
-  }
   console.log('----------');
 });
 
@@ -145,13 +103,13 @@ async function start(client: Client) {
   // console.log("TCL: start -> newMessages", newMessages)
   // console.log("TCL: getAllNewMessages ->", newMessages.length, newMessages[0]);
 
-  client.onAck((c: any) => console.log(c.id, c.body, c.ack));
+  // client.onAck((c: any) => console.log(c.id, c.body, c.ack));
 
-  client.onAddedToGroup((newGroup) =>
-    console.log('Added to new Group', newGroup.id)
-  );
+  // client.onAddedToGroup((newGroup) =>
+  //   console.log('Added to new Group', newGroup.id)
+  // );
 
-  client.onIncomingCall((call) => console.log('newcall', call));
+  // client.onIncomingCall((call) => console.log('newcall', call));
 
   const prods = await client.getBusinessProfilesProducts(me.wid);
   console.log(prods);
@@ -161,7 +119,7 @@ async function start(client: Client) {
   //Returns 'CONNECTED' or 'TIMEOUT' or 'CONFLICT' (if user opens whatsapp web somewhere else)
   client.onStateChanged((state) => {
     console.log('statechanged', state);
-    if (state === 'CONFLICT' || state === 'UNLAUNCHED') client.forceRefocus();
+    // if (state === 'CONFLICT' || state === 'UNLAUNCHED') client.forceRefocus();
   });
 
   // setTimeout(_=> client.kill(), 3000);
@@ -170,14 +128,21 @@ async function start(client: Client) {
   // console.log("TCL: start -> allMessages", allmsgs.length);
 
   client.onAnyMessage((message) => {
-    console.log('---onAnyMessage---');
     console.log(message.type);
-    if (message.body === 'DELETE')
-      client.deleteMessage(message.from, message.id, false);
+    // if (message.body === 'DELETE')
+    //   client.deleteMessage(message.from, message.id, false);
   });
   // client.onParticipantsChanged("XXXXXXXXXX-YYYYYYYYY@g.us",x=>console.log(x))
   client.onMessage(async (message) => {
-    console.log('----hey----');
+    console.log('----from onMessage----');
+  });
+  client.onMessage(async (message) => {
+    console.log('----from onMessage----');
+    // if (message.type === MessageTypes.TEXT) {
+    //   console.log(message);
+    //   // message.chat.
+    //   console.log(message.chat.msgs);
+    // }
     try {
       // const mp3_message_id = await client.sendAudio(
       //   message.from,
@@ -185,11 +150,6 @@ async function start(client: Client) {
       //   undefined
       // );
       // console.log('start -> mp', mp3_message_id);
-
-      const isConnected = await client.isConnected();
-      console.log('TCL: start -> isConnected from onMessage', isConnected);
-      console.log(message.body, message.id, message?.quotedMsgObj?.id);
-
       console.log('before try catch');
       console.log(message.body);
       const responses = DB_CONFIG[message.body];
@@ -221,121 +181,154 @@ async function start(client: Client) {
             }
           }
         }
+        // await client.sendText(
+        //   message.from,
+        //   'Sea un trigger del bot y que ejecute una secuencia de cosas'
+        // );
+        // await client.sendFile(
+        //   message.from,
+        //   './src/redhat-event-driven-architecture.pdf',
+        //   'redhat-event-driven-architecture',
+        //   `You just sent me this ${message.type}`
+        // );
+        // client.archiveChat(message.from, true);
+        // const isConnected = await client.isConnected();
+        // console.log('TCL: start -> isConnected', isConnected);
+        // console.log(message.body, message.id, message?.quotedMsgObj?.id);
+        // you can send a file also with sendImage or await client.sendFile
       }
-    } catch (error) {
-      console.log('TCL: start -> error', error);
-    }
-    try {
-      // const mp3_message_id = await client.sendAudio(
-      //   message.from,
-      //   'https://file-examples-com.github.io/uploads/2017/11/file_example_MP3_700KB.mp3',
-      //   null
-      // );
-      // console.log('start -> mp', mp3_message_id);
-      // if (message.mimetype) {
-      //   const filename = `${message.t}.${mime.extension(message.mimetype)}`;
-      //   // if it is a sticker, you need to run this.
-      //   let mediaData;
-      //   if (message.type === 'sticker') {
-      //     //getStickerDecryptable is an insiders feature!
-      //     let stickerDecryptable = await client.getStickerDecryptable(
-      //       message.id
-      //     );
-      //     if (stickerDecryptable)
-      //       mediaData = await decryptMedia(stickerDecryptable, uaOverride);
-      //   } else {
-      //     mediaData = await decryptMedia(message, uaOverride);
-      //   }
-      //   if (message.type === 'video') {
-      //     const mp4_as_sticker = await client.sendMp4AsSticker(
-      //       message.from,
-      //       mediaData
-      //     );
-      //     console.log('start -> mp4_as_sticker', mp4_as_sticker);
-      //   }
-      //   // you can send a file also with sendImage or await client.sendFile
-      //   await client.sendImage(
-      //     message.from,
-      //     `data:${message.mimetype};base64,${mediaData.toString('base64')}`,
-      //     filename,
-      //     `You just sent me this ${message.type}`
-      //   );
-      //   //send the whole data URI so the mimetype can be checked.
-      //   await client.sendImageAsSticker(
-      //     message.from,
-      //     `data:${message.mimetype};base64,${mediaData.toString('base64')}`
-      //   );
-      //   //get this numbers products
-      //   // const products = await client.getBusinessProfilesProducts(message.to);
-      //   // //send a product from this number to that number
-      //   //  await client.sendImageWithProduct(
-      //   //   `data:${message.mimetype};base64,${mediaData.toString('base64')}`,
-      //   //   message.from,
-      //   //   'check out this product',
-      //   //   message.to,
-      //   //   products[0].id)
-      //   // await client.forwardMessages(message.from,message,false);
-      //   await client.forwardMessages(message.from, message.id, false);
-      //   fs.writeFileSync(filename, mediaData, function (err) {
-      //     if (err) {
-      //       return console.log(err);
-      //     }
-      //     console.log('The file was saved!');
-      //   });
-      //   /**
-      //    * You can also send the file as a relative file reference. The library will automatically open the file and get the dataUrl
-      //    */
-      //   const message_id_from_file = await client.sendImage(
-      //     message.from,
-      //     './' + filename,
-      //     filename,
-      //     'from file',
-      //     null,
-      //     true,
-      //     false
-      //   );
-      //   console.log('start -> message_id', message_id_from_file);
-      //   /**
-      //    * Now you can send an animated gif via url
-      //    */
-      //   const sticker_from_url_gif_id = await client.sendStickerfromUrl(
-      //     message.from,
-      //     'https://i.giphy.com/media/yJil9u57ybQ9movc6E/source.gif'
-      //   );
-      //   console.log(
-      //     'start -> sticker_from_url_gif_id',
-      //     sticker_from_url_gif_id
-      //   );
-      // } else if (message.type === 'location') {
-      //   if (message.shareDuration)
-      //     console.log(
-      //       'This user has started sharing their live location',
-      //       message.author || message.from
-      //     );
-      //   console.log(
-      //     'TCL: location -> message',
-      //     message.lat,
-      //     message.lng,
-      //     message.loc
-      //   );
-      //   await client.sendLocation(
-      //     message.from,
-      //     `${message.lat}`,
-      //     `${message.lng}`,
-      //     `Youre are at ${message.loc}`
-      //   );
-      // } else {
-      //   // var sentMessageId = await client.sendText(message.from, message.body);
-      //   // console.log("start -> sentMessageId", sentMessageId)
-      //   // //send a giphy gif
-      //   //   await client.forwardMessages(message.from,message,false);
-      //   // await client.sendGiphy(message.from,'https://media.giphy.com/media/oYtVHSxngR3lC/giphy.gif','Oh my god it works');
-      //   // console.log("TCL: start -> message.from,message.body,message.id.toString()", message.from,message.body,message.id.toString())
-      //   // await client.reply(message.from,message.body,message);
+      // if (message.body == 'activame') {
+      //   client.archiveChat(message.from, false);
       // }
     } catch (error) {
       console.log('TCL: start -> error', error);
     }
+    // try {
+    //   const mp3_message_id = await client.sendAudio(
+    //     message.from,
+    //     'https://file-examples-com.github.io/uploads/2017/11/file_example_MP3_700KB.mp3',
+    //     undefined
+    //   );
+    //   console.log('start -> mp', mp3_message_id);
+
+    //   const isConnected = await client.isConnected();
+    //   console.log('TCL: start -> isConnected', isConnected);
+    //   console.log(message.body, message.id, message?.quotedMsgObj?.id);
+    //   if (message.mimetype) {
+    //     const filename = `${message.t}.${mime.extension(message.mimetype)}`;
+
+    //     // if it is a sticker, you need to run this.
+    //     let mediaData;
+    //     if (message.type === 'sticker') {
+    //       //getStickerDecryptable is an insiders feature!
+    //       let stickerDecryptable = await client.getStickerDecryptable(
+    //         message.id
+    //       );
+    //       if (stickerDecryptable)
+    //         mediaData = await decryptMedia(stickerDecryptable, uaOverride);
+    //     } else {
+    //       mediaData = await decryptMedia(message, uaOverride);
+    //     }
+    //     if (message.type === 'video') {
+    //       const mp4_as_sticker = await client.sendMp4AsSticker(
+    //         message.from,
+    //         //@ts-ignore
+    //         mediaData
+    //       );
+    //       console.log('start -> mp4_as_sticker', mp4_as_sticker);
+    //     }
+    //     // you can send a file also with sendImage or await client.sendFile
+    //     await client.sendImage(
+    //       message.from,
+    //       // @ts-ignore
+    //       `data:${message.mimetype};base64,${mediaData.toString('base64')}`,
+    //       filename,
+    //       `You just sent me this ${message.type}`
+    //     );
+
+    //     //send the whole data URI so the mimetype can be checked.
+    //     await client.sendImageAsSticker(
+    //       message.from,
+    //       // @ts-ignore
+    //       `data:${message.mimetype};base64,${mediaData.toString('base64')}`
+    //     );
+    //     //get this numbers products
+    //     // const products = await client.getBusinessProfilesProducts(message.to);
+
+    //     // //send a product from this number to that number
+    //     //  await client.sendImageWithProduct(
+    //     //   `data:${message.mimetype};base64,${mediaData.toString('base64')}`,
+    //     //   message.from,
+    //     //   'check out this product',
+    //     //   message.to,
+    //     //   products[0].id)
+
+    //     // await client.forwardMessages(message.from,message,false);
+
+    //     await client.forwardMessages(message.from, message.id, false);
+    //     fs.writeFileSync(filename, mediaData, function (err: any) {
+    //       if (err) {
+    //         return console.log(err);
+    //       }
+    //       console.log('The file was saved!');
+    //     });
+
+    //     /**
+    //      * You can also send the file as a relative file reference. The library will automatically open the file and get the dataUrl
+    //      */
+    //     const message_id_from_file = await client.sendImage(
+    //       message.from,
+    //       './' + filename,
+    //       filename,
+    //       'from file',
+    //       // @ts-ignore
+    //       null,
+    //       true,
+    //       false
+    //     );
+    //     console.log('start -> message_id', message_id_from_file);
+
+    //     /**
+    //      * Now you can send an animated gif via url
+    //      */
+    //     const sticker_from_url_gif_id = await client.sendStickerfromUrl(
+    //       message.from,
+    //       'https://i.giphy.com/media/yJil9u57ybQ9movc6E/source.gif'
+    //     );
+    //     console.log(
+    //       'start -> sticker_from_url_gif_id',
+    //       sticker_from_url_gif_id
+    //     );
+    //   } else if (message.type === 'location') {
+    //     if (message.shareDuration)
+    //       console.log(
+    //         'This user has started sharing their live location',
+    //         message.author || message.from
+    //       );
+    //     console.log(
+    //       'TCL: location -> message',
+    //       message.lat,
+    //       message.lng,
+    //       message.loc
+    //     );
+    //     await client.sendLocation(
+    //       message.from,
+    //       `${message.lat}`,
+    //       `${message.lng}`,
+    //       `Youre are at ${message.loc}`
+    //     );
+    //   } else {
+    //     // var sentMessageId = await client.sendText(message.from, message.body);
+    //     // console.log("start -> sentMessageId", sentMessageId)
+    //     // //send a giphy gif
+    //     //   await client.forwardMessages(message.from,message,false);
+    //     // await client.sendGiphy(message.from,'https://media.giphy.com/media/oYtVHSxngR3lC/giphy.gif','Oh my god it works');
+    //     // console.log("TCL: start -> message.from,message.body,message.id.toString()", message.from,message.body,message.id.toString())
+    //     // await client.reply(message.from,message.body,message);
+    //   }
+    // } catch (error) {
+    //   console.log('TCL: start -> error', error);
+    // }
   });
 
   // const groupCreationEvent = await client.createGroup('coolnewgroup','0000000000@c.us');
@@ -369,6 +362,7 @@ create({
     // width: 1920,
     height: 1200,
   },
+  multiDevice: true,
   popup: 3012,
   defaultViewport: null,
   // cacheEnabled:false,

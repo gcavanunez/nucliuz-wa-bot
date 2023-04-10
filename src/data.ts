@@ -2,13 +2,13 @@ const DefinedTypes = ['image', 'file', 'text'] as const;
 export const DB_CONFIG = Object.freeze<
   Record<string, { payload: string; type: (typeof DefinedTypes)[number] }[]>
 >({
-  'Me gustaría recibir información del estabilizador Osmo Mobile 6': [
+  'Osmo Mobile 6': [
     {
       payload:
         'Hola, buen día! 🙌🏼 Te envío información del Osmo Mobile 6. Lo tenemos para entrega inmediata',
       type: 'text',
     },
-    { payload: 'first-image.png', type: 'image' },
+    { payload: 'first-image.jpeg', type: 'image' },
     {
       payload: `DJI Osmo Mobile 6
       S/899 S/799 🔥Oferta Cyber LENZ🔥
@@ -22,8 +22,8 @@ export const DB_CONFIG = Object.freeze<
       type: 'text',
     },
     { payload: 'sample-vid.mp4', type: 'file' },
-    { payload: 'second-image.png', type: 'image' },
-    { payload: 'thrid-image.png', type: 'image' },
+    { payload: 'second-image.jpeg', type: 'image' },
+    { payload: 'thrid-image.jpeg', type: 'image' },
     {
       payload: `Tenemos también estos modelos disponibles 😊
       ¿Con qué modelo de celular y para qué tipo de videos lo utilizarías?`,
