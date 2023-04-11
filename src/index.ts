@@ -13,6 +13,8 @@ import {
 import path from 'path';
 import { DB_CONFIG } from './data';
 const fs = require('fs');
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 const uaOverride =
   'WhatsApp/2.16.352 Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_1) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Safari/605.1.15';
 const tosBlockGuaranteed =
@@ -97,6 +99,8 @@ ev.on('**', async (data, sessionId, namespace) => {
                 );
               }
             }
+            // Random sleep amount in seconds
+            await sleep(1000);
           }
           await globalClient.archiveChat(message.from, true);
         }
