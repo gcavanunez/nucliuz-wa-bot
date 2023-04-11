@@ -193,36 +193,36 @@ async function start(client: Client) {
 
       console.log('before try catch');
       console.log(message.body);
-      const responses = DB_CONFIG[message.body];
-      console.log({ responses });
-      if (responses) {
-        for (let i = 0; i < responses.length; i++) {
-          const element = responses[i];
-          if (i === 0) {
-            await client.reply(message.from, element.payload, message.id);
-          } else {
-            if (element.type === 'text') {
-              await client.sendText(message.from, element.payload);
-            }
-            if (element.type === 'file') {
-              await client.sendFile(
-                message.from,
-                path.resolve(process.cwd(), 'attachments', element.payload),
-                element.payload,
-                `You just sent me this ${message.type}`
-              );
-            }
-            if (element.type === 'image') {
-              await client.sendImage(
-                message.from,
-                path.resolve(process.cwd(), 'attachments', element.payload),
-                element.payload,
-                `You just sent me this ${message.type}`
-              );
-            }
-          }
-        }
-      }
+      // const responses = DB_CONFIG[message.body];
+      // console.log({ responses });
+      // if (responses) {
+      //   for (let i = 0; i < responses.length; i++) {
+      //     const element = responses[i];
+      //     if (i === 0) {
+      //       await client.reply(message.from, element.payload, message.id);
+      //     } else {
+      //       if (element.type === 'text') {
+      //         await client.sendText(message.from, element.payload);
+      //       }
+      //       if (element.type === 'file') {
+      //         await client.sendFile(
+      //           message.from,
+      //           path.resolve(process.cwd(), 'attachments', element.payload),
+      //           element.payload,
+      //           `You just sent me this ${message.type}`
+      //         );
+      //       }
+      //       if (element.type === 'image') {
+      //         await client.sendImage(
+      //           message.from,
+      //           path.resolve(process.cwd(), 'attachments', element.payload),
+      //           element.payload,
+      //           `You just sent me this ${message.type}`
+      //         );
+      //       }
+      //     }
+      //   }
+      // }
     } catch (error) {
       console.log('TCL: start -> error', error);
     }
