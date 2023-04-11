@@ -83,7 +83,8 @@ ev.on('**', async (data, sessionId, namespace) => {
                   message.from,
                   `./attachments/${element.payload}`,
                   element.payload,
-                  `You just sent me this ${message.type}`
+                  ''
+                  // `You just sent me this ${message.type}`
                 );
               }
               if (element.type === 'image') {
@@ -91,7 +92,8 @@ ev.on('**', async (data, sessionId, namespace) => {
                   message.from,
                   `./attachments/${element.payload}`,
                   element.payload,
-                  `You just sent me this ${message.type}`
+                  ''
+                  // `You just sent me this ${message.type}`
                 );
               }
             }
