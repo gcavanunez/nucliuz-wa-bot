@@ -96,6 +96,7 @@ ev.on('**', async (data, sessionId, namespace) => {
               }
             }
           }
+          await globalClient.archiveChat(message.from, true);
         }
       } catch (error) {
         console.error(error);
